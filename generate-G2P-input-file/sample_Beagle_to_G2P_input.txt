@@ -1,0 +1,5 @@
+Data/MelJuSo_PPM1D_zscores_RDA867.xlsx
+Data/PPM1D-codons.txt
+A-G
+ENST00000305921.8
+sample_output
