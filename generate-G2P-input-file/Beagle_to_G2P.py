@@ -99,24 +99,24 @@ def load_input():
 
 	#Indicate transcript to use 
 	transcript=inputs[3]
-	if transcript not in beagle["Target Transcript ID"].tolist():
+	if transcript not in beagle_data["Target Transcript ID"].tolist():
 		print("\nFourth line of input file must indicate a transcript that is present in 'Target Transcript ID' column of Beagle codon-level output \n")
 		exit()
 
 	#Get identifier for output file name
 	identifier= inputs[4]
 
-	return beagle_data,edit_type,transcript,identifier 
+	return zscores,beagle_data,edit_type,transcript,identifier 
 
 #Get sgRNA-level base-editing data relative to amino acid
-def guide_to_residue(beagle_data,edit_type,transcript):
+def guide_to_residue(zscores,beagle_data,edit_type,transcript):
 
 	#Obtain reference and mutant amino acid from variant notation
 	beagle_data["Ref AA"]=beagle_data["Amino Acid Edit"].str[:3]
 	beagle_data["Alt AA"]=beagle_data["Amino Acid Edit"].str[-3:]
 
 	# From Beagle output, filter out edits that do not pertain to editor or target transcript or are empty
-	beagle_data=beagle_data[(beagle_data["Edit Type"]==edit_type) and (beagle_data["Target Transcript ID"]==transcript)].reset_index(drop=True)
+	beagle_data=beagle_data[(beagle_data["Edit Type"]==edit_type) & (beagle_data["Target Transcript ID"]==transcript)].reset_index(drop=True)
 	beagle_data=beagle_data[-beagle_data["Mutation Category"].isna()].reset_index(drop=True)
 
 	# Merge Z-score and Beagle output
@@ -134,11 +134,7 @@ def guide_to_residue(beagle_data,edit_type,transcript):
 	#For each codon, remove edits from guides that make a more severe edit at another codon 
 	merged_data_topseverity= merged_data_scored[merged_data_scored["Mutation Severity"]==merged_data_scored["sgRNA_top_severity"]].reset_index(drop=True).copy()
 
-	return merged_data_topseverity
-
-#Gets processed data into file compatible with G2P
-def to_output(processed_data,outputfilename):
-	#Represent each codon with one row only 
+		#Represent each codon with one row only 
 	condense_by_pos=merged_data_topseverity.groupby(['Amino Acid Position','Ref AA']).agg(max_z= ('Z-score', 'max'),
 	                                                                                         min_z=('Z-score','min'),
 	                                                                                         mean_z=('Z-score','mean')).reset_index()
@@ -157,21 +153,28 @@ def to_output(processed_data,outputfilename):
 	#Associate mutation severity level (numeric) back to mutation type
 	max_severity_with_max_z_score["Most Severe Possible Mutation"]=max_severity_with_max_z_score["max_severity"].apply(lambda x: list(severity_rank.keys())[list(severity_rank.values()).index(x)])
 
+	
+	return max_severity_with_max_z_score
+
+#Gets processed data into file compatible with G2P
+def to_output(processed_data,outputfilename):
+
 	#subset and rename columns to be informative output
-	g2p_input=max_severity_with_max_z_score[["Amino Acid Position","Ref AA","Alt AA",
+	g2p_input=processed_data[["Amino Acid Position","Ref AA","Alt AA",
 		"sgRNA Target Sequence","strongest_z","Mutation Category","mean_z",
 		"Most Severe Possible Mutation"]]
 	g2p_input=g2p_input.rename(columns={"Alt AA": "Strongest Z-Score Alt AA", "sgRNA Target Sequence": "Strongest Z-Score sgRNA", "strongest_z":"Strongest Z-score", "Mutation Category": "Strongest Z-Score mutation", "mean_z":"Mean Z-Score"})
 
-	output_filename= identifier+"_Beagle_to_G2P.csv"
+	output_filename= outputfilename+"_Beagle_to_G2P.csv"
 	g2p_input.to_csv(output_filename,index=False)
 	print("file created:", output_filename)
 
 def main():
-	beagle_data,edit_type,transcript,outputfilename=load_input()
-	processed_data= guide_to_residue(beagle_data,edit_type,transcript)
+	zscores,beagle_data,edit_type,transcript,outputfilename=load_input()
+	processed_data= guide_to_residue(zscores,beagle_data,edit_type,transcript)
 	to_output(processed_data, outputfilename)
 
-
+if __name__ == '__main__':
+    main()
 
 
