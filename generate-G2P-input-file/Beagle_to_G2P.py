@@ -14,7 +14,7 @@ Example input file contents:
 	Data/PPM1D-codons.txt
 	A-G
 	ENST00000305921.8
-	sample_identifier
+	sample_output
 	
 Requirements: Python v.3.8.16, Pandas v.1.5.3
 
@@ -31,7 +31,7 @@ Inputs (provided in input file indicated as command line argument):
 5. Identifier to prepend to output file name 
 
 Outputs: 
-1. File (sample_identifier_Beagle_to_G2P.csv) to upload into G2P portal. Each row is an amino acid along the protein
+1. File (sample_output_Beagle_to_G2P.csv) to upload into G2P portal. Each row is an amino acid along the protein
 	Columns: 
 	- Amino Acid Position: Integer indicating position of amino acid along the protein
 	- Ref AA : Reference Amino Acid at this position on MANE Select Transcript
