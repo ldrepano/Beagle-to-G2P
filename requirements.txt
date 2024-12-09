@@ -1,0 +1,4 @@
+seaborn
+openpyxl
+plotly 
+scipy
