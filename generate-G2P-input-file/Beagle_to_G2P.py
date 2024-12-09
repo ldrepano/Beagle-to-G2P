@@ -16,7 +16,6 @@ Example input file contents:
 	ENST00000305921.8
 	sample_output
 	
-Requirements: Python v.3.8.16, Pandas v.1.5.3
 
 
 Inputs (provided in input file indicated as command line argument):
@@ -81,6 +80,7 @@ def load_input():
 	if ("sgRNA Target Sequence" not in zscores.columns.tolist()) | ("Z-score" not in zscores.columns.tolist()):
 		print("\nPlease ensure Z-score file contains the following columns: sgRNA Target Sequence, Z-score\n")
 		exit()
+	zscores=zscores[["sgRNA Target Sequence", "Z-score"]]
 		
 
 	#Read in Beagle codon-level output
